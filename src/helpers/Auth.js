@@ -4,19 +4,18 @@ import history from './History';
 const {
   REACT_APP_AUTH0_CALLBACK,
   REACT_APP_AUTH0_DOMAIN,
-  REACT_APP_AUTH0_CLIENT_ID
+  REACT_APP_AUTH0_CLIENT_ID,
+  REACT_APP_AUTH0_AUDIENCE
 } = process.env;
-
-const AUDIENCE = `https://${REACT_APP_AUTH0_DOMAIN}/userinfo`;
 
 export default class Auth {
   auth0 = new auth0.WebAuth({
     domain: REACT_APP_AUTH0_DOMAIN,
     clientID: REACT_APP_AUTH0_CLIENT_ID,
     redirectUri: REACT_APP_AUTH0_CALLBACK,
-    audience: AUDIENCE,
+    audience: REACT_APP_AUTH0_AUDIENCE,
     responseType: 'token id_token',
-    scope: 'openid profile'
+    scope: 'openid profile read:users'
   });
 
   userProfile;
@@ -47,8 +46,12 @@ export default class Auth {
     history.replace('/dashboard');
   }
 
+  getAccessToken = () => {
+    return localStorage.getItem('access_token');
+  }
+
   getProfile = (cb) => {
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = this.getAccessToken();
     if (!accessToken) return null;
 
     this.auth0.client.userInfo(accessToken, (err, profile) => {
